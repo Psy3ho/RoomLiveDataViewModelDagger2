@@ -22,6 +22,10 @@ public class BorrowModel {
         this.personName = personName;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getItemName() {
         return itemName;
     }

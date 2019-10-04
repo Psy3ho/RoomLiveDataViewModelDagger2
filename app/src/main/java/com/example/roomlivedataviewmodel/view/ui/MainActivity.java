@@ -17,12 +17,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.roomlivedataviewmodel.R;
 
+import io.reactivex.CompletableObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerViewAdapter recyclerViewAdapter;
 
     private ActivityMainBinding activityMainBinding;
     private BorrowedListViewModel borrowedListViewModel;
+
+    private Disposable mDisposable = new CompositeDisposable();
+
 
 
     @Override
@@ -41,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         observe();
 
-
         activityMainBinding.setCallback(mAddItemCallback);
     }
 
@@ -51,14 +59,29 @@ public class MainActivity extends AppCompatActivity {
         observe();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mDisposable.dispose();
+    }
+
     private void observe(){
-        borrowedListViewModel.getListLiveData().observe(this, borrowModelList -> {
+        mDisposable =  borrowedListViewModel.getListFlowable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe( borrowModelList -> {
+
             if (borrowModelList != null) {
                 recyclerViewAdapter.setItemList(borrowModelList);
                 activityMainBinding.executePendingBindings();
+                activityMainBinding.setLoading(false);
+            } else {
+                activityMainBinding.setLoading(true);
             }
         });
+
     }
+
     private final AddItemCallback mAddItemCallback = new AddItemCallback() {
         @Override
         public void onClick() {

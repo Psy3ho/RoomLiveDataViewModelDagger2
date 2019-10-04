@@ -12,6 +12,10 @@ import com.example.roomlivedataviewmodel.db.entity.BorrowModel;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
+
 import static androidx.room.OnConflictStrategy.REPLACE;
 
 @Dao
@@ -25,10 +29,10 @@ public interface BorrowModelDao {
     BorrowModel getItembyId(String id);
 
     @Query("select * from BorrowModel")
-    LiveData<List<BorrowModel>> getAllBorrowedItems();
+    Flowable<List<BorrowModel>> getAllBorrowedItems();
 
     @Insert(onConflict = REPLACE)
-    void addBorrow(BorrowModel borrowModel);
+    Completable addBorrow(BorrowModel borrowModel);
 
     @Delete
     void deleteBorrow(BorrowModel borrowModel);

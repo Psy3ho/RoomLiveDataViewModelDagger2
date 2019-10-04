@@ -28,7 +28,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public RecyclerViewAdapter(@Nullable DeleteItemCallback deleteItemCallback) {
         this.deleteItemCallback = deleteItemCallback;
-        setHasStableIds(true);
+        setHasStableIds(false);
     }
 
     public void setItemList(final List<? extends  BorrowModel> borrowModelList) {
@@ -50,16 +50,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
                  @Override
                  public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                     return mBorrowModelList.get(oldItemPosition).getItemName() ==
-                             borrowModelList.get(newItemPosition).getItemName();
+                     return mBorrowModelList.get(oldItemPosition).getId() ==
+                             borrowModelList.get(newItemPosition).getId();
                  }
 
                  @Override
                  public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
                      BorrowModel newProduct = borrowModelList.get(newItemPosition);
                      BorrowModel oldProduct = mBorrowModelList.get(oldItemPosition);
-                     return newProduct.getItemName() == oldProduct.getItemName()
-                             && Objects.equals(newProduct.getBorrowData(), oldProduct.getBorrowData())
+                     return newProduct.getItemName().equals(oldProduct.getItemName())
+                             && (newProduct.getId() == oldProduct.getId())
                              && Objects.equals(newProduct.getPersonName(), oldProduct.getPersonName());
                  }
              });
