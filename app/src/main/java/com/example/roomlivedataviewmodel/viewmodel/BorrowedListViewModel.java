@@ -51,8 +51,8 @@ public class BorrowedListViewModel extends AndroidViewModel {
         Completable.fromAction(() -> appDatabase.itemAndPersonelModel().deleteBorrow(borrowModel))
                 .delay(3000,TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CompletableObserver() {
+                .observeOn(AndroidSchedulers.mainThread()).
+                subscribe(new CompletableObserver() {
             @Override
             public void onSubscribe(Disposable d) {
                 Toast.makeText(getApplication().getApplicationContext(),"starting delay ->  3 seconds", Toast.LENGTH_LONG).show();

@@ -2,6 +2,7 @@ package com.example.roomlivedataviewmodel.view.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.roomlivedataviewmodel.databinding.ActivityMainBinding;
 import com.example.roomlivedataviewmodel.db.entity.BorrowModel;
@@ -17,7 +18,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.roomlivedataviewmodel.R;
 
+import org.reactivestreams.Subscription;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.CompletableObserver;
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -65,22 +72,51 @@ public class MainActivity extends AppCompatActivity {
         mDisposable.dispose();
     }
 
-    private void observe(){
-        mDisposable =  borrowedListViewModel.getListFlowable()
+    private void observe() {
+        borrowedListViewModel.getListFlowable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe( borrowModelList -> {
+                .delay(3, TimeUnit.SECONDS)
+                .subscribe(new FlowableSubscriber<List<BorrowModel>>() {
+                               @Override
+                               public void onSubscribe(Subscription s) {
+                                   activityMainBinding.setLoading(true);
+                                   s.request(1);
+                               }
 
-            if (borrowModelList != null) {
-                recyclerViewAdapter.setItemList(borrowModelList);
-                activityMainBinding.executePendingBindings();
-                activityMainBinding.setLoading(false);
-            } else {
-                activityMainBinding.setLoading(true);
-            }
-        });
+                               @Override
+                               public void onNext(List<BorrowModel> borrowModelList) {
+                                   recyclerViewAdapter.setItemList(borrowModelList);
+                                   activityMainBinding.executePendingBindings();
 
+                               }
+
+                               @Override
+                               public void onError(Throwable t) {
+
+                               }
+
+                               @Override
+                               public void onComplete() {
+                                  activityMainBinding.setLoading(false);
+                               }
+                           });
+//                        borrowModelList -> {
+//                            if (borrowModelList != null) {
+//                                recyclerViewAdapter.setItemList(borrowModelList);
+//                                activityMainBinding.executePendingBindings();
+//                                activityMainBinding.setLoading(false);
+//                            } else {
+//                                activityMainBinding.setLoading(true);
+//                            }
+//                        },
+//                        error -> Toast.makeText(this,
+//                                "data error -> " + error,
+//                                Toast.LENGTH_LONG)
+//                                .show());
     }
+
+
 
     private final AddItemCallback mAddItemCallback = new AddItemCallback() {
         @Override
