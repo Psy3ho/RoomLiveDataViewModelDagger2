@@ -34,9 +34,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void setItemList(final List<? extends  BorrowModel> borrowModelList) {
          if(this.mBorrowModelList == null) {
              this.mBorrowModelList = borrowModelList;
-      //       notifyItemRangeInserted(0,borrowModelList.size());
+             notifyItemRangeInserted(0,borrowModelList.size());
          } else {
-             DiffUtil.Callback diffUtilCallback;
              DiffUtil.DiffResult result = DiffUtil.calculateDiff(new Callback() {
                  @Override
                  public int getOldListSize() {

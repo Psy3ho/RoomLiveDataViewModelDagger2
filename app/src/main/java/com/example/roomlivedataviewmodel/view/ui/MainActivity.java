@@ -75,30 +75,33 @@ public class MainActivity extends AppCompatActivity {
     private void observe() {
         borrowedListViewModel.getListFlowable()
                 .subscribeOn(Schedulers.io())
+                .delay(3,TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .delay(3, TimeUnit.SECONDS)
                 .subscribe(new FlowableSubscriber<List<BorrowModel>>() {
                                @Override
                                public void onSubscribe(Subscription s) {
                                    activityMainBinding.setLoading(true);
-                                   s.request(1);
+                                   s.request(Long.MAX_VALUE);
                                }
 
                                @Override
                                public void onNext(List<BorrowModel> borrowModelList) {
                                    recyclerViewAdapter.setItemList(borrowModelList);
                                    activityMainBinding.executePendingBindings();
+                                   activityMainBinding.setLoading(false);
 
                                }
 
                                @Override
                                public void onError(Throwable t) {
-
+                                   Toast.makeText(getApplicationContext()
+                                           ,"data error -> " + t
+                                           ,Toast.LENGTH_LONG)
+                                           .show();
                                }
 
                                @Override
                                public void onComplete() {
-                                  activityMainBinding.setLoading(false);
                                }
                            });
 //                        borrowModelList -> {
