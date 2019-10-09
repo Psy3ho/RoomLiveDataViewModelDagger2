@@ -35,6 +35,7 @@ import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
@@ -65,8 +66,6 @@ public class MainActivity extends AppCompatActivity {
         activityMainBinding.getRoot();
         list = new ArrayList<>();
 
-        observe();
-
         activityMainBinding.setCallback(mAddItemCallback);
     }
 
@@ -85,20 +84,21 @@ public class MainActivity extends AppCompatActivity {
     private void observe() {
         borrowedListViewModel.getListFlowable()
                 .delay(3,TimeUnit.SECONDS)
-                .flatMap(Flowable::fromIterable)
-                .filter(borrowModel -> borrowModel.getItemName().contains("a"))
+                .flatMap(listBorrow -> Flowable.fromIterable(listBorrow)
+                        .filter(borrowModel -> borrowModel.getItemName().contains("a"))
+                        .toList()
+                        .toFlowable())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .toList()
-                .subscribe(new SingleObserver<List<BorrowModel>>() {
+                .subscribe(new FlowableSubscriber<List<BorrowModel>>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
+                    public void onSubscribe(Subscription s) {
                         activityMainBinding.setLoading(true);
-
+                        s.request(Long.MAX_VALUE);
                     }
 
                     @Override
-                    public void onSuccess(List<BorrowModel> borrowModels) {
+                    public void onNext(List<BorrowModel> borrowModels) {
                         recyclerViewAdapter.setItemList(borrowModels);
                         activityMainBinding.executePendingBindings();
                         activityMainBinding.setLoading(false);
@@ -106,11 +106,62 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(Throwable t) {
+                        Toast.makeText(
+                                getApplicationContext()
+                                ,"Error = " + t.toString()
+                                ,Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+
+                    @Override
+                    public void onComplete() {
 
                     }
                 });
-//                .subscribe(new FlowableSubscriber<List<BorrowModel>>() {
+//                .subscribe(borrowModels -> {
+//                    activityMainBinding.setLoading(true);
+//                    recyclerViewAdapter.setItemList(borrowModels);
+//                    activityMainBinding.executePendingBindings();
+//                    activityMainBinding.setLoading(false);
+//                });
+
+
+
+
+        /*
+        * Skusanie RX JAVA pozri ked nevies!!!
+        *
+        * pozor ROOM sa nedostane na OnComplete()
+        *
+        * */
+//                .flatMap(Flowable::fromIterable)
+//                .filter(borrowModel -> borrowModel.getItemName().contains("a"))
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .toList()
+//                .subscribe(new SingleObserver<List<BorrowModel>>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                        activityMainBinding.setLoading(true);
+//
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(List<BorrowModel> borrowModels) {
+//                        recyclerViewAdapter.setItemList(borrowModels);
+//                        activityMainBinding.executePendingBindings();
+//                        activityMainBinding.setLoading(false);
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//
+//                    }
+//                });
+////                .subscribe(new FlowableSubscriber<List<BorrowModel>>() {
 //                               @Override
 //                               public void onSubscribe(Subscription s) {
 //                                   activityMainBinding.setLoading(true);
